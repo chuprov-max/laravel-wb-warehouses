@@ -3,10 +3,11 @@
 namespace App\Console\Commands;
 
 use Dakword\WBSeller\API\Endpoint\Supplies;
+use App\Models\Warehouse;
 use Illuminate\Console\Command;
 use Dakword\WBSeller\API;
 
-class FetchAcceptanceCoefficients extends Command
+class WbHandleWarehouses extends AbstractWbCommand
 {
     /**
      * The name and signature of the console command.
@@ -14,36 +15,27 @@ class FetchAcceptanceCoefficients extends Command
      *
      * @var string
      */
-    protected $signature = 'wb:fetch-acceptance-coefficients';
+    protected $signature = 'wb:handle-warehouses';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Fetch acceptance coefficients from Wildberries API';
+    protected $description = 'Get list of warehouses from Wildberries API and insert records to database';
 
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function customHandle()
     {
         try {
-            // API ключ Wildberries
-            $options = [
-                'masterkey' => config('services.wildberries.apiKey'),
-            ];
-
-            // Инициализация WBSeller
-            $wbSeller = new API($options);
-            $supplies = $wbSeller->Supplies();
+            $supplies = $this->wbSellerApi->Supplies();
 
             // Отправка запроса к API для получения коэффициентов
-            $response = $supplies->ping(); //$wbSeller->get('https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients');
-            if ($response) {
-                //$this->getWarehouses($supplies);
-                $this->getAcceptanceCoefficients($supplies);
-                die();
+            $ping = $supplies->ping(); //$wbSeller->get('https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients');
+            if ($ping && $ping->Status == 'OK') {
+                $this->syncWarehouses($supplies);
             }
 
             // Проверка ответа
@@ -66,19 +58,24 @@ class FetchAcceptanceCoefficients extends Command
         }
     }
 
-    private function getWarehouses(Supplies $supplies)
+    private function syncWarehouses(Supplies $supplies): bool
     {
-        // TODO save warehouses to database
-        dd($supplies->warehouses());
-    }
-
-    private function getAcceptanceCoefficients(Supplies $supplies)
-    {
-        dd($supplies->coefficients([507]));
-    }
-
-    private function setAcceptanceOptions(Supplies $supplies)
-    {
-        dd($supplies->options());
+        $processedCount = 0;
+        foreach ($supplies->warehouses() as $item) {
+            Warehouse::updateOrCreate(
+                ['wb_id' => $item->ID], // если `id` должен соответствовать внешнему ID
+                [
+                    'wb_id' => $item->ID,
+                    'name'        => $item->name,
+                    'address'     => $item->address,
+                    'work_time'   => $item->workTime,
+                    'accepts_qr'  => $item->acceptsQR,
+                    'active'      => $item->isActive,
+                ]
+            );
+            $processedCount++;
+        }
+        echo "Number of handled warehouses: $processedCount";
+        return true;
     }
 }

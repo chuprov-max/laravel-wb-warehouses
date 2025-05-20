@@ -6,7 +6,7 @@ use Dakword\WBSeller\APIToken;
 use Illuminate\Console\Command;
 use Dakword\WBSeller\API;
 
-class WBPing extends Command
+class WBPing extends AbstractWbCommand
 {
     /**
      * The name and signature of the console command.
@@ -25,17 +25,11 @@ class WBPing extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function customHandle(): int
     {
         try {
-            $options = [
-                'masterkey' => config('services.wildberries.apiKey'),
-            ];
-
-            $wbSellerAPI = new API($options);
-
-            $Common = $wbSellerAPI->Common();
-            $response = $Common->ping();
+            $custom = $this->wbSellerApi->Common();
+            $response = $custom->ping();
 
             if ($response) {
                 $this->info('✅ Подключение успешно! Пинг выполнен.');
