@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Dakword\WBSeller\API\Endpoint\Supplies;
+use App\Jobs\CheckWarehouseCoefficientsJob;
 use Illuminate\Console\Command;
-use Dakword\WBSeller\API;
 
-class WbFetchAcceptanceCoefficients extends AbstractWbCommand
+class WbFetchAcceptanceCoefficients extends Command
 {
+    const DELAY_SECONDS = 15;
     /**
      * The name and signature of the console command.
      * @link https://github.com/Dakword/WBSeller/blob/master/docs/Supplies.md
@@ -26,32 +26,11 @@ class WbFetchAcceptanceCoefficients extends AbstractWbCommand
     /**
      * Execute the console command.
      */
-    public function customHandle()
+    public function handle()
     {
         try {
-            $supplies = $this->wbSellerApi->Supplies();
-
-            // Отправка запроса к API для получения коэффициентов
-            $response = $supplies->ping(); //$wbSeller->get('https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients');
-            if ($response) {
-                //$this->getWarehouses($supplies);
-                $this->getAcceptanceCoefficients($supplies);
-                die();
-            }
-
-            // Проверка ответа
-            if ($response['error'] ?? false) {
-                $this->error("Ошибка API: " . $response['message'] ?? 'Неизвестная ошибка');
-                return 1;
-            }
-
-            // Вывод данных
-            $coefficients = $response['data'] ?? [];
-            foreach ($coefficients as $coefficient) {
-                $this->info("Склад: {$coefficient['warehouse']}, Коэффициент: {$coefficient['coefficient']}");
-            }
-
-            $this->info('Коэффициенты успешно получены!');
+            $this->getAcceptanceCoefficients();
+            $this->info('Коэффициенты обработаны!');
             return 0;
         } catch (\Exception $e) {
             $this->error('Произошла ошибка: ' . $e->getMessage());
@@ -59,19 +38,15 @@ class WbFetchAcceptanceCoefficients extends AbstractWbCommand
         }
     }
 
-    private function getWarehouses(Supplies $supplies)
+    private function getAcceptanceCoefficients()
     {
-        // TODO save warehouses to database
-        dd($supplies->warehouses());
-    }
+        $priorityList = config('warehouses.acceptancePriority');
+        $delay = now();
 
-    private function getAcceptanceCoefficients(Supplies $supplies)
-    {
-        dd($supplies->coefficients([507]));
-    }
-
-    private function setAcceptanceOptions(Supplies $supplies)
-    {
-        dd($supplies->options());
+        foreach ($priorityList as $item) {
+            $this->info('Start to handle warehouse: ' . $item["name"]);
+            CheckWarehouseCoefficientsJob::dispatch($item['id'])->delay($delay);
+            $delay = $delay->addSeconds(self::DELAY_SECONDS);
+        }
     }
 }

@@ -113,6 +113,13 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        'warehousesCoefficients' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/warehousesCoefficients.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
     ],
 
 ];

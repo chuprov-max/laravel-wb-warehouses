@@ -7,6 +7,7 @@ use App\Models\Warehouse;
 use Illuminate\Console\Command;
 use Dakword\WBSeller\API;
 
+// TODO remove extending from AbstractWbCommand
 class WbHandleWarehouses extends AbstractWbCommand
 {
     /**
@@ -43,14 +44,6 @@ class WbHandleWarehouses extends AbstractWbCommand
                 $this->error("Ошибка API: " . $response['message'] ?? 'Неизвестная ошибка');
                 return 1;
             }
-
-            // Вывод данных
-            $coefficients = $response['data'] ?? [];
-            foreach ($coefficients as $coefficient) {
-                $this->info("Склад: {$coefficient['warehouse']}, Коэффициент: {$coefficient['coefficient']}");
-            }
-
-            $this->info('Коэффициенты успешно получены!');
             return 0;
         } catch (\Exception $e) {
             $this->error('Произошла ошибка: ' . $e->getMessage());
