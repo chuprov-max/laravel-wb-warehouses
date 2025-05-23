@@ -16,7 +16,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('wb:fetch-acceptance-coefficients')->hourly();
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('wb:fetch-acceptance-coefficients')->everyMinute();
     }
 
     /**
