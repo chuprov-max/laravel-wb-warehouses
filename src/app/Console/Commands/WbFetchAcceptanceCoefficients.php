@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class WbFetchAcceptanceCoefficients extends Command
 {
-    const DELAY_SECONDS = 15;
+    const DELAY_SECONDS = 10;
     /**
      * The name and signature of the console command.
      * @link https://github.com/Dakword/WBSeller/blob/master/docs/Supplies.md
@@ -42,10 +42,10 @@ class WbFetchAcceptanceCoefficients extends Command
     {
         $priorityList = config('warehouses.acceptancePriority');
         $delay = now();
+        $ids = array_column($priorityList, 'id');
 
-        foreach ($priorityList as $item) {
-            $this->info('Start to handle warehouse: ' . $item["name"]);
-            CheckWarehouseCoefficientsJob::dispatch($item['id'])->delay($delay);
+        for ($i = 0; $i < 4; $i++) {
+            CheckWarehouseCoefficientsJob::dispatch($ids)->delay($delay);
             $delay = $delay->addSeconds(self::DELAY_SECONDS);
         }
     }

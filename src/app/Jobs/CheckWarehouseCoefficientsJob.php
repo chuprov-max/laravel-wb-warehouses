@@ -17,29 +17,30 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $warehouseId;
+    public $warehouseIds;
 
-    public function __construct(int $warehouseId)
+    public function __construct(array $warehouseIds)
     {
-        $this->warehouseId = $warehouseId;
+        $this->warehouseIds = $warehouseIds;
     }
 
     public function handle(SuppliesApiClient $suppliesApiClient)
     {
         Log::channel('warehousesCoefficients')->info("Задача запущена", [
-            'warehouse_id' => $this->warehouseId,
+            'warehouse_ids' => $this->warehouseIds,
             'time' => now()->toDateTimeString(),
         ]);
         try {
-            $response = $suppliesApiClient->getSupplies()->coefficients([$this->warehouseId]);
+            $response = $suppliesApiClient->getSupplies()->coefficients($this->warehouseIds);
 
             $logData = [
-                'warehouse_id'   => $this->warehouseId,
+                'warehouse_id'   => $this->warehouseIds,
                 'response'       => $response,
             ];
 
             // Логируем в отдельный канал
-            Log::channel('warehousesCoefficients')->info('Warehouse checked', $logData);
+            //Log::channel('warehousesCoefficients')->info('Warehouse checked', $logData);
+            Log::channel('warehousesCoefficients')->info('Warehouse coefficients received = '. count($response));
 
             $suitableCoefficients = $this->filterSuitableCoefficients($response);
 
@@ -58,7 +59,7 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
                 Log::channel('warehousesCoefficients')->info('Founded coefficient with ID='.$model->id, $model->toArray());
             }
         } catch (\Throwable $e) {
-            Log::channel('warehousesCoefficients')->error("Ошибка при запросе к складу {$this->warehouseId}: " . $e->getMessage());
+            Log::channel('warehousesCoefficients')->error("Ошибка при запросе к складам: " . $e->getMessage());
         }
     }
 
