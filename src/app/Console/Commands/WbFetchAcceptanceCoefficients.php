@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class WbFetchAcceptanceCoefficients extends Command
 {
     const DELAY_SECONDS = 10;
+    const SEARCH_IS_ACTIVE = true; // temp solution. Need to be activated base on task from admin panel
     /**
      * The name and signature of the console command.
      * @link https://github.com/Dakword/WBSeller/blob/master/docs/Supplies.md
@@ -28,6 +29,10 @@ class WbFetchAcceptanceCoefficients extends Command
      */
     public function handle()
     {
+        if (!self::SEARCH_IS_ACTIVE) { // TODO run only when task was activated via admin panel
+            return 1;
+        }
+
         try {
             $this->getAcceptanceCoefficients();
             $this->info('Коэффициенты обработаны!');

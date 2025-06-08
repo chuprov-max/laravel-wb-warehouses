@@ -33,13 +33,6 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
         try {
             $response = $suppliesApiClient->getSupplies()->coefficients($this->warehouseIds);
 
-            $logData = [
-                'warehouse_id'   => $this->warehouseIds,
-                'response'       => $response,
-            ];
-
-            // Логируем в отдельный канал
-            //Log::channel('warehousesCoefficients')->info('Warehouse checked', $logData);
             Log::channel('warehousesCoefficients')->info('Warehouse coefficients received = '. count($response));
 
             $suitableCoefficients = $this->filterSuitableCoefficients($response);
@@ -57,6 +50,14 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
                     'status' => SuitableCoefficient::STATUS_CREATED
                 ]);
                 Log::channel('warehousesCoefficients')->info('Founded coefficient with ID='.$model->id, $model->toArray());
+
+                $logData = [
+                    'warehouse_id'   => $coefficient->warehouseId,
+                    'response'       => $response,
+                ];
+                Log::channel('warehousesCoefficients')->info('Response, which contains suitable coefficient', $logData);
+
+                // TODO send notification to Telegram
             }
         } catch (\Throwable $e) {
             Log::channel('warehousesCoefficients')->error("Ошибка при запросе к складам: " . $e->getMessage());

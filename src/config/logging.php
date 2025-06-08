@@ -120,6 +120,12 @@ return [
             'level' => 'info',
             'days' => 14,
         ],
+        'acceptanceOptions' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/acceptanceOptions.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
     ],
 
 ];

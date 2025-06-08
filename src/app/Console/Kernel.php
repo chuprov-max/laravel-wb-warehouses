@@ -15,8 +15,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('wb:fetch-acceptance-coefficients')->hourly();
-        $schedule->command('wb:fetch-acceptance-coefficients')->everyMinute();
+        // TODO set interval based on doc's limit
+        $schedule->command('wb:fetch-acceptance-coefficients')->everyThreeMinutes();
     }
 
     /**
