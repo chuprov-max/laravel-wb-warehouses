@@ -57,7 +57,7 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
                 ];
                 Log::channel('warehousesCoefficients')->info('Response, which contains suitable coefficient', $logData);
 
-                // TODO send notification to Telegram
+                $model->notify();
             }
         } catch (\Throwable $e) {
             Log::channel('warehousesCoefficients')->error("Ошибка при запросе к складам: " . $e->getMessage());

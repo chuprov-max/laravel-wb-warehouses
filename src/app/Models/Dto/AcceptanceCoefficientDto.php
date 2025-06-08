@@ -2,14 +2,11 @@
 
 namespace App\Models\Dto;
 
+use App\Models\SuitableCoefficient;
 use Carbon\Carbon;
 
 class AcceptanceCoefficientDto
 {
-    const BOX_TYPE_ID_KOROBA = 2;
-    const BOX_TYPE_ID_MONOPALLETTY = 5;
-    const BOX_TYPE_ID_SUPERSAFE = 6;
-
     const HOURS_PLUS_SUITABLE = 96;
 
     /**
@@ -87,7 +84,7 @@ class AcceptanceCoefficientDto
         return
             ($this->isCoefficientFree() || $this->isCoefficientPaid())
             && $this->allowUnload
-            && $this->boxTypeId == self::BOX_TYPE_ID_KOROBA
+            && $this->boxTypeId == SuitableCoefficient::BOX_TYPE_ID_KOROBA
             && $this->isDateSuitable();
     }
 }
