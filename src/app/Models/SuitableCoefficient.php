@@ -21,27 +21,13 @@ class SuitableCoefficient extends Model
 
     protected $fillable = ['warehouse_id', 'coefficient', 'allow_unload', 'box_type_id', 'accept_date', 'status'];
 
-    public function notify()
+    public function getBoxTypeRussianName(): string
     {
-        $botToken = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
-        $warehouseName = WarehouseHelper::getNameById($this->warehouse_id);
-        $text = "<strong>Найден подходящий коэффициент для склада {$warehouseName} (id = {$this->warehouse_id})</strong><br/>
-Коэффициент: {$this->coefficient}<br/>
-Тип поставки: {$this->box_type_id}<br/>
-Дата поставки: {$this->accept_date}<br/>
-";
-
-        $response = Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
-            'chat_id' => $chatId,
-            'text' => $text,
-            'parse_mode' => 'HTML', // можно markdown
-        ]);
-
-        $this->status = self::STATUS_NOTIFIED;
-        $this->saveQuietly();
-
-        return $response->successful();
+        if ($this->box_type_id == self::BOX_TYPE_ID_KOROBA) {
+            return 'Короба';
+        } elseif ($this->box_type_id == self::BOX_TYPE_ID_MONOPALLETTY) {
+            return 'Монопаллеты';
+        }
+        return "Суперсейф";
     }
-
 }

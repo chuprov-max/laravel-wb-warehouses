@@ -22,3 +22,6 @@
 
 ## Реализуемый функционал
 https://seller.wildberries.ru/instructions/ru/ru/subcategory/e324ce0f-9a2a-4b8d-8fd1-72f751b09b3b
+
+## Техническая документация по API (FBW Поставки)
+https://dev.wildberries.ru/openapi/orders-fbw#tag/Postavki

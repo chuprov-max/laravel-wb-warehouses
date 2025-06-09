@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Dto\AcceptanceCoefficientDto;
 use App\Models\SuitableCoefficient;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -57,7 +58,7 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
                 ];
                 Log::channel('warehousesCoefficients')->info('Response, which contains suitable coefficient', $logData);
 
-                $model->notify();
+                (new NotificationService())->pushAboutCoefficient($model);
             }
         } catch (\Throwable $e) {
             Log::channel('warehousesCoefficients')->error("Ошибка при запросе к складам: " . $e->getMessage());
