@@ -1,0 +1,38 @@
+@extends('layouts.app')
+
+@section('title', 'Коэффициенты')
+
+@section('content')
+    <h1>Коэффициенты</h1>
+
+    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+        <tr style="background-color: #f0f0f0;">
+            <th>ID</th>
+            <th>Склад</th>
+            <th>Коэффициент</th>
+            <th>Дата приема</th>
+            <th>Дата обнаружения</th>
+        </tr>
+        </thead>
+        <tbody>
+        @forelse ($coefficients as $coefficient)
+            <tr>
+                <td>{{ $coefficient->id }}</td>
+                <td>{{ $coefficient->warehouse_id ?? '-' }}</td>
+                <td>{{ $coefficient->coefficient ?? '-' }}</td>
+                <td>{{ $coefficient->accept_date ?? '-' }}</td>
+                <td>{{ $coefficient->created_at->format('Y-m-d H:i') }}</td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="5" style="text-align:center;">Нет данных</td>
+            </tr>
+        @endforelse
+        </tbody>
+    </table>
+
+    <div style="margin-top: 1rem;">
+        {{ $coefficients->links() }}
+    </div>
+@endsection

@@ -56,6 +56,16 @@ services:
     networks:
       - laravel-network
 
+  node:
+    image: node:20
+    container_name: node-builder
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    networks:
+      - laravel-network
+    entrypoint: [ "tail", "-f", "/dev/null" ]
+
 volumes:
   db_data:
 
