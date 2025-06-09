@@ -3,6 +3,7 @@
 namespace App\Services\Messengers;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TelegramClient  implements MessengerInterface
 {
@@ -25,6 +26,10 @@ class TelegramClient  implements MessengerInterface
             'text' => $message,
             'parse_mode' => 'MarkdownV2',
         ]);
+
+        if (!$response->successful()) {
+            Log::channel('acceptanceOptions')->info('Telegram response failed: ' . $response->body());
+        }
 
         return $response->successful();
     }
