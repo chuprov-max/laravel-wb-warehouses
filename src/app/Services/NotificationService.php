@@ -36,7 +36,8 @@ class NotificationService
         $parsedDateTime = Carbon::parse($coefficient->created_at)->translatedFormat('d F Y \в H:i:s');
 
         return "*Найден подходящий коэффициент для склада*\n\n" .
-            "*__Склад:__* {$warehouseName} \(ID\={$coefficient->warehouse_id}\)\n" .
+            "*__Склад:__* {$warehouseName}\n" .
+            "*__ID склада:__* {$coefficient->warehouse_id}\n" .
             "*__Коэффициент:__* {$coefficient->coefficient}\n" .
             "*__Тип поставки:__* {$coefficient->getBoxTypeRussianName()}\n" .
             "*__Дата поставки:__* {$parsedDate}\n" .
