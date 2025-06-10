@@ -86,6 +86,23 @@
         .button-primary:hover {
             background-color: #2779bd;
         }
+
+        .button-success {
+            background-color: #38c172;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .button-success:hover {
+            background-color: #2fa360;
+        }
     </style>
 </head>
 <body>

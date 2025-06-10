@@ -5,7 +5,7 @@
 @section('content')
     <h1>Поисковые запросы</h1>
 
-    <a href="{{ route('search-requests.create') }}">+ Добавить</a>
+    <a href="{{ route('search-requests.create') }}" class="button-success">+ Добавить</a>
 
     <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; text-align:center; margin-top:1rem;">
         <thead>
