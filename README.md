@@ -12,6 +12,10 @@
 - Laravel: http://localhost:8080
 - phpMyAdmin: http://localhost:8081
 
+## Prod urls
+- https://titulwb.ru/
+- https://95.163.229.231/phpmyadmin
+
 ## Run queues
 `docker exec -it laravel-app php artisan queue:work --sleep=3`
 
