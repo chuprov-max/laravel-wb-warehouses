@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\SuitableCoefficient;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Log;
 
 class TestTelegramNotification extends Command
 {
@@ -27,7 +28,11 @@ class TestTelegramNotification extends Command
             return 1;
         }
 
-        (new NotificationService())->pushAboutCoefficient($model);
+        if ((new NotificationService())->pushAboutCoefficient($model)) {
+            Log::channel('warehousesCoefficients')->info('[TestTelegramNotification] Telegram Notification sent successfully');
+        } else {
+            Log::channel('warehousesCoefficients')->info('[TestTelegramNotification] Telegram Notification was failed');
+        }
 
         $this->info("Уведомление отправлено по коэффициенту ID = {$id}");
 

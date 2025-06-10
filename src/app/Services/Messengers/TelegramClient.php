@@ -28,7 +28,11 @@ class TelegramClient  implements MessengerInterface
         ]);
 
         if (!$response->successful()) {
-            Log::channel('acceptanceOptions')->info('Telegram response failed: ' . $response->body());
+            Log::channel('warehousesCoefficients')->info('Telegram response failed: ' , [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'json' => $response->json(), // если ответ в JSON
+            ]);
         }
 
         return $response->successful();
