@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@yield('title', 'Панель')</title>
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    <link rel="stylesheet" href="{{ mix('css/app.css') }}" />
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%;
@@ -14,6 +14,26 @@
         .wrapper {
             display: flex;
             height: 100vh;
+            flex-direction: column;
+        }
+        header.topbar {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 0 1rem;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+            font-size: 1rem;
+        }
+        header.topbar form {
+            margin: 0;
+        }
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
         }
         nav.sidebar {
             width: 220px;
@@ -40,28 +60,44 @@
             background: white;
             overflow-y: auto;
         }
-        header {
+        main.content > header {
             font-size: 1.5rem;
             margin-bottom: 1rem;
+        }
+        button.logout-btn {
+            background: none;
+            border: none;
+            color: #ecf0f1;
+            cursor: pointer;
+            padding: 0;
+            font: inherit;
         }
     </style>
 </head>
 <body>
 <div class="wrapper">
-    <nav class="sidebar">
-        <h2>Меню</h2>
-        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">Главная</a>
-        <a href="{{ route('coefficients') }}" class="{{ request()->routeIs('coefficients') ? 'active' : '' }}">Коэффициенты</a>
-        <form method="POST" action="{{ route('logout') }}" style="margin-top:auto;">
-            @csrf
-            <button type="submit" style="background:none;border:none;color:#ecf0f1;cursor:pointer;padding:0;">Выйти</button>
-        </form>
-    </nav>
-    <main class="content">
-        <header>@yield('title', 'Панель')</header>
-        @yield('content')
-    </main>
+    <header class="topbar">
+        @if(Auth::check())
+            <span>{{ Auth::user()->name }}</span>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="logout-btn">Выйти</button>
+            </form>
+        @endif
+    </header>
+
+    <div class="main-wrapper">
+        <nav class="sidebar">
+            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">Главная</a>
+            <a href="{{ route('coefficients') }}" class="{{ request()->routeIs('coefficients') ? 'active' : '' }}">Коэффициенты</a>
+        </nav>
+        <main class="content">
+            <header>@yield('title', 'Панель')</header>
+            @yield('content')
+        </main>
+    </div>
 </div>
+
 <script src="{{ mix('js/app.js') }}"></script>
 </body>
 </html>

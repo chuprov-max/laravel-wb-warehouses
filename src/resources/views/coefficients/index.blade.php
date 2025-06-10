@@ -5,7 +5,7 @@
 @section('content')
     <h1>Коэффициенты</h1>
 
-    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; text-align: center;">
         <thead>
         <tr style="background-color: #f0f0f0;">
             <th>ID</th>

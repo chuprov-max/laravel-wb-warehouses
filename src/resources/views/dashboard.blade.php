@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Панель')
+@section('title', 'Главная')
 
 @section('content')
     <p>Добро пожаловать!</p>
