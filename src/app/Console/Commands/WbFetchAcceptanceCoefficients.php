@@ -49,9 +49,11 @@ class WbFetchAcceptanceCoefficients extends Command
         $delay = now();
         $ids = array_column($priorityList, 'id');
 
-        for ($i = 0; $i < 4; $i++) {
+        CheckWarehouseCoefficientsJob::dispatch($ids); // для запуска 1 раз в минуту (раз в 3 минуты)
+
+        /*for ($i = 0; $i < 4; $i++) { // для запуска по 4 раза в минуту
             CheckWarehouseCoefficientsJob::dispatch($ids)->delay($delay);
             $delay = $delay->addSeconds(self::DELAY_SECONDS);
-        }
+        }*/
     }
 }
