@@ -26,7 +26,6 @@
                 <td>{{ $r->id }}</td>
                 <td>{{ $r->user->name ?? '-' }}</td>
                 <td>{{ \App\Models\SuitableCoefficient::getBoxTypeRussianNameById($r->box_type_id)}}</td>
-                <td>{{ $r->box_type_id }}</td>
                 <td>{{ $r->max_coefficient }}</td>
                 <td>{{ $r->status ? 'Вкл' : 'Выкл' }}</td>
                 <td>{{ $r->started_at ?? '-' }}</td>
