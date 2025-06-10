@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/coefficients', [\App\Http\Controllers\SuitableCoefficientController::class, 'index'])
         ->name('coefficients');
 
+    Route::resource('search-requests', \App\Http\Controllers\SearchRequestController::class)->names('search-requests');
+
     /*
     Route::get('verify-email', [EmailVerificationPromptController::class, '__invoke'])
                 ->name('verification.notice');

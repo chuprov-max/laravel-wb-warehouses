@@ -24,7 +24,7 @@
                 <td>{{ $coefficient->coefficient ?? '-' }}</td>
                 <td>{{ $coefficient->accept_date ?? '-' }}</td>
                 <td>{{ $coefficient->getBoxTypeRussianName() ?? '-' }}</td>
-                <td>{{ $coefficient->created_at->format('Y-m-d H:i') }}</td>
+                <td>{{ $coefficient->created_at->format('Y-m-d H:i:s') }}</td>
             </tr>
         @empty
             <tr>

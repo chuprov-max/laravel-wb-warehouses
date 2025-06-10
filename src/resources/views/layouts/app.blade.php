@@ -72,6 +72,20 @@
             padding: 0;
             font: inherit;
         }
+
+        .button-primary {
+            background-color: #3490dc;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button-primary:hover {
+            background-color: #2779bd;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +103,7 @@
     <div class="main-wrapper">
         <nav class="sidebar">
             <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">Главная</a>
+            <a href="{{ route('search-requests.index') }}" class="{{ request()->routeIs('search-requests') ? 'active' : '' }}">Поисковые запросы</a>
             <a href="{{ route('coefficients') }}" class="{{ request()->routeIs('coefficients') ? 'active' : '' }}">Коэффициенты</a>
         </nav>
         <main class="content">

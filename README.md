@@ -28,3 +28,10 @@ https://seller.wildberries.ru/instructions/ru/ru/subcategory/e324ce0f-9a2a-4b8d-
 
 ## Техническая документация по API (FBW Поставки)
 https://dev.wildberries.ru/openapi/orders-fbw#tag/Postavki
+
+### Перезапуск очередей
+```
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart laravel-worker:*
+```

@@ -19,15 +19,21 @@ class SuitableCoefficient extends Model
     const BOX_TYPE_ID_MONOPALLETTY = 5;
     const BOX_TYPE_ID_SUPERSAFE = 6;
 
+    public static $boxTypesRussianNames = [
+        self::BOX_TYPE_ID_KOROBA =>  'Короба',
+        self::BOX_TYPE_ID_MONOPALLETTY => 'Монопаллеты',
+        self::BOX_TYPE_ID_SUPERSAFE => 'Суперсейф'
+    ];
+
     protected $fillable = ['warehouse_id', 'coefficient', 'allow_unload', 'box_type_id', 'accept_date', 'status'];
 
     public function getBoxTypeRussianName(): string
     {
-        if ($this->box_type_id == self::BOX_TYPE_ID_KOROBA) {
-            return 'Короба';
-        } elseif ($this->box_type_id == self::BOX_TYPE_ID_MONOPALLETTY) {
-            return 'Монопаллеты';
-        }
-        return "Суперсейф";
+        return self::$boxTypesRussianNames[$this->box_type_id] ?? '';
+    }
+
+    public static function getBoxTypeRussianNameById(int $boxTypeId): string
+    {
+        return self::$boxTypesRussianNames[$boxTypeId] ?? '';
     }
 }
