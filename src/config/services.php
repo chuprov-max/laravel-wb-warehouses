@@ -32,5 +32,9 @@ return [
     'wildberries' => [
         'apiKey' => env('WILDBERRIES_API_KEY'),
     ],
+    'telegram' => [
+        'token' => env('TELEGRAM_BOT_TOKEN'),
+        'chatId' => env('TELEGRAM_CHAT_ID'),
+    ],
 
 ];
