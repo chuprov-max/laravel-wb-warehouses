@@ -12,6 +12,7 @@
             <th>Склад</th>
             <th>Коэффициент</th>
             <th>Дата приема</th>
+            <th>Тип</th>
             <th>Дата обнаружения</th>
         </tr>
         </thead>
@@ -19,9 +20,10 @@
         @forelse ($coefficients as $coefficient)
             <tr>
                 <td>{{ $coefficient->id }}</td>
-                <td>{{ $coefficient->warehouse_id ?? '-' }}</td>
+                <td>{{ \App\Helpers\WarehouseHelper::getNameById($coefficient->warehouse_id) ?? '-' }}</td>
                 <td>{{ $coefficient->coefficient ?? '-' }}</td>
                 <td>{{ $coefficient->accept_date ?? '-' }}</td>
+                <td>{{ $coefficient->getBoxTypeRussianName() ?? '-' }}</td>
                 <td>{{ $coefficient->created_at->format('Y-m-d H:i') }}</td>
             </tr>
         @empty
