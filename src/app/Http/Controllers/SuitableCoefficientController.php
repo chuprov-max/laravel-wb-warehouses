@@ -7,12 +7,19 @@ use Illuminate\Http\Request;
 
 class SuitableCoefficientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Получаем все записи с пагинацией, например 15 на страницу
-        $coefficients = SuitableCoefficient::orderBy('id', 'desc')->paginate(15);
+        //$coefficients = SuitableCoefficient::orderBy('id', 'desc')->paginate(15);
+        $query = SuitableCoefficient::query();
 
-        // Возвращаем view с данными
-        return view('coefficients.index', compact('coefficients'));
+        if ($request->filled('warehouse_id')) {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+
+        $coefficients = $query->latest()->paginate(20);
+
+        $warehouses = collect(config('warehouses.acceptancePriority'))->pluck('name', 'id')->toArray();
+
+        return view('coefficients.index', compact('coefficients', 'warehouses'));
     }
 }

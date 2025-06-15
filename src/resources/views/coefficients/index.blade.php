@@ -15,6 +15,22 @@
             <th>Тип</th>
             <th>Дата обнаружения</th>
         </tr>
+        <tr>
+            <form method="GET" action="{{ route('coefficients') }}">
+                <td></td>
+                <td>
+                    <select name="warehouse_id" onchange="this.form.submit()">
+                        <option value="">-- Все склады --</option>
+                        @foreach($warehouses as $id => $name)
+                            <option value="{{ $id }}" {{ request('warehouse_id') == $id ? 'selected' : '' }}>
+                                {{ $name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </td>
+                <td colspan="4"></td>
+            </form>
+        </tr>
         </thead>
         <tbody>
         @forelse ($coefficients as $coefficient)
@@ -35,6 +51,6 @@
     </table>
 
     <div style="margin-top: 1rem;">
-        {{ $coefficients->links() }}
+        {{ $coefficients->appends(request()->query())->links() }}
     </div>
 @endsection
