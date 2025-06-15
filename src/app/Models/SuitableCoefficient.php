@@ -25,7 +25,7 @@ class SuitableCoefficient extends Model
         self::BOX_TYPE_ID_SUPERSAFE => 'Суперсейф'
     ];
 
-    protected $fillable = ['warehouse_id', 'coefficient', 'allow_unload', 'box_type_id', 'accept_date', 'status'];
+    protected $fillable = ['warehouse_id', 'search_request_id', 'coefficient', 'allow_unload', 'box_type_id', 'accept_date', 'status'];
 
     public function getBoxTypeRussianName(): string
     {

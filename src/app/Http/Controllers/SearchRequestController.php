@@ -32,7 +32,12 @@ class SearchRequestController extends Controller
             $validated['started_at'] = now();
         }
 
-        SearchRequest::create($validated);
+        $searchRequest = SearchRequest::create($validated);
+
+        if ($searchRequest->status == SearchRequest::STATUS_ACTIVE) {
+            $searchRequest->disableOtherRequests();
+        }
+
         return redirect()->route('search-requests.index')->with('success', 'Запрос добавлен');
     }
 
@@ -49,9 +54,11 @@ class SearchRequestController extends Controller
             'status' => 'required|boolean',
         ]);
 
-        if ($searchRequest->status == 0 && $validated['status'] == 1) {
+        if ($searchRequest->status == SearchRequest::STATUS_INACTIVE && $validated['status'] == SearchRequest::STATUS_ACTIVE) {
             $validated['started_at'] = now();
-        } elseif ($searchRequest->status == 1 && $validated['status'] == 0) {
+            $validated['stopped_at'] = null;
+            $searchRequest->disableOtherRequests();
+        } elseif ($searchRequest->status == SearchRequest::STATUS_ACTIVE && $validated['status'] == SearchRequest::STATUS_INACTIVE) {
             $validated['stopped_at'] = now();
         }
 

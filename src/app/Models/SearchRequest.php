@@ -9,6 +9,9 @@ class SearchRequest extends Model
 {
     use HasFactory;
 
+    const STATUS_ACTIVE = 1;
+    const STATUS_INACTIVE = 0;
+
     protected $fillable = [
         'user_id', 'box_type_id', 'max_coefficient', 'status',
         'started_at', 'stopped_at',
@@ -17,5 +20,22 @@ class SearchRequest extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return mixed
+     */
+    public static function getCurrentActiveRequest()
+    {
+        return self::where('status', self::STATUS_ACTIVE)
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    public function disableOtherRequests()
+    {
+        return self::where('status', self::STATUS_ACTIVE)
+            ->where('id', '!=', $this->id)
+            ->update(['status' => self::STATUS_INACTIVE, 'stopped_at' => now()]);
     }
 }

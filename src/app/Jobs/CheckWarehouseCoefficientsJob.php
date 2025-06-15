@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Dto\AcceptanceCoefficientDto;
+use App\Models\SearchRequest;
 use App\Models\SuitableCoefficient;
 use App\Services\NotificationService;
 use Carbon\Carbon;
@@ -18,11 +19,20 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /**
+     * @var array
+     */
     public $warehouseIds;
 
-    public function __construct(array $warehouseIds)
+    /**
+     * @var SearchRequest|null
+     */
+    public $searchRequest;
+
+    public function __construct(array $warehouseIds, SearchRequest $searchRequest = null)
     {
         $this->warehouseIds = $warehouseIds;
+        $this->searchRequest = $searchRequest;
     }
 
     public function handle(SuppliesApiClient $suppliesApiClient)
@@ -30,6 +40,7 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
         Log::channel('warehousesCoefficients')->info("Задача запущена", [
             'warehouse_ids' => $this->warehouseIds,
             'time' => now()->toDateTimeString(),
+            'searchRequestId' => $this->searchRequest ? $this->searchRequest->id : null,
         ]);
         try {
             $response = $suppliesApiClient->getSupplies()->coefficients($this->warehouseIds);
@@ -44,6 +55,7 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
             foreach ($suitableCoefficients as $coefficient) {
                 $model = SuitableCoefficient::create([
                     'warehouse_id' => $coefficient->warehouseId,
+                    'search_request_id' => $this->searchRequest ? $this->searchRequest->id : null,
                     'coefficient' => $coefficient->coefficient,
                     'allow_unload' => $coefficient->allowUnload,
                     'box_type_id' => $coefficient->boxTypeId,
