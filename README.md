@@ -1,7 +1,32 @@
-## Run containers
-
+## Local installation
+#### Run containers
 `docker-compose up -d --build`
 
+#### Install packages
+`docker exec -it laravel-app composer install`  
+
+#### Generate Laravel Password
+`docker exec -it laravel-app php artisan key:generate` 
+
+#### Run migrations
+`docker exec -it laravel-app php artisan migrate` 
+
+#### Create first user
+`docker exec -it laravel-app php artisan tinker`
+
+```
+> use App\Models\User;
+User::create([
+'name' => 'admin',
+'email' => 'mail@englishteachers.ru',
+'password' => bcrypt('PASSWORD'),
+]);
+```
+
+#### Add env variables
+ - `WILDBERRIES_API_KEY`
+ - `TELEGRAM_BOT_TOKEN`
+ - `TELEGRAM_CHAT_ID`
 
 ## Check containers status
 
@@ -39,3 +64,82 @@ sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl restart laravel-worker:*
 ```
+
+## 📬 Настройка отправки сообщений в Telegram-канал
+
+Для интеграции Laravel-проекта с Telegram нужно получить два параметра:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+### ✅ Шаг 1: Создание закрытого канала
+
+1. В Telegram нажмите **«Создать канал»**.
+2. Укажите имя, например `My Logs`.
+3. Выберите **Тип канала: Частный**.
+4. Завершите создание.
+
+---
+
+### ✅ Шаг 2: Создание Telegram-бота
+
+1. Откройте чат с [`@BotFather`](https://t.me/BotFather).
+2. Отправьте команду:
+
+    ```
+    /newbot
+    ```
+
+3. Укажите имя и username бота, например: `my_logger_bot`.
+4. После создания вы получите токен:
+
+    ```
+    123456789:AAHqRANDOMtextKEYdfgdfgdfg
+    ```
+
+➡️ Сохраните его как `TELEGRAM_BOT_TOKEN`.
+
+---
+
+### ✅ Шаг 3: Добавление бота в канал
+
+1. Перейдите в настройки канала → **Участники**.
+2. Нажмите **Добавить участника**, найдите своего бота по username (`@my_logger_bot`).
+3. Добавьте его и назначьте **администратором** (достаточно права публиковать сообщения).
+
+---
+
+### ✅ Шаг 4: Получение `TELEGRAM_CHAT_ID`
+
+1. Отправьте любое сообщение в канал.
+2. Откройте в браузере ссылку:
+
+    ```
+    https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getUpdates
+    ```
+
+   Пример:
+
+    ```
+    https://api.telegram.org/bot123456789:ABCdefGHIjklMNOpqrSTUvwXYZ12345678/getUpdates
+    ```
+
+3. В ответе найдите блок:
+
+    ```json
+    "chat": {
+      "id": -1001234567890,
+      "title": "My Logs",
+      ...
+    }
+    ```
+
+➡️ Значение `id` и есть `TELEGRAM_CHAT_ID`.
+
+---
+
+### 🧾 Пример `.env`
+
+```env
+TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrSTUvwXYZ12345678
+TELEGRAM_CHAT_ID=-1001234567890
