@@ -32,6 +32,17 @@ User::create([
 
 `docker ps`
 
+Docker Desktop (Mac) может игнорировать DNS в docker-compose.yml. 
+- Перейдите в Docker Desktop → Settings → Docker Engine 
+- Добавьте в JSON:
+```
+{
+  "dns": ["8.8.8.8", "1.1.1.1"]
+}
+```
+
+Нажмите Apply & Restart.
+
 ## Local urls
 
 - Laravel: http://localhost:8080
