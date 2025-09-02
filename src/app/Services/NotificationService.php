@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Helpers\StringHelper;
 use App\Helpers\WarehouseHelper;
+use App\Models\SearchRequest;
 use App\Models\SuitableCoefficient;
 use App\Services\Messengers\MessengerInterface;
 use App\Services\Messengers\TelegramClient;
@@ -11,6 +13,52 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
+    /**
+     * @param SearchRequest $searchRequest
+     * @param array $coefficients
+     * @return bool
+     */
+    public function pushAboutCoefficients(SearchRequest $searchRequest, array $coefficients): bool
+    {
+        $boxTypeTitle = SuitableCoefficient::getBoxTypeRussianNameById($searchRequest->box_type_id);
+        $message = "*Найден подходящий коэффициент для поиска*\n\n" .
+            "*__ID поиска:__* {$searchRequest->id}\n" .
+            "*__Тип поставки:__* {$boxTypeTitle}\n\n";
+
+        foreach ($coefficients as $warehouseId => $coefficientsForWarehouse) {
+            $warehouseName = StringHelper::escapeMarkdown(WarehouseHelper::getNameById($warehouseId));
+            $message .= "\n📦 *__Склад:__* {$warehouseName}\n";
+            foreach ($coefficientsForWarehouse as $coefficient) {
+                $message .= $this->prepareTextByWarehouse($coefficient);
+            }
+        }
+
+        $client = $this->getMessengerClient();
+
+        Log::channel('warehousesCoefficients')->info('Telegram Notification was prepared', [
+            'message'   => $message,
+        ]);
+
+        if ($client->send($message)) {
+            foreach ($coefficients as $coefficientsForWarehouse) {
+                foreach ($coefficientsForWarehouse as $coefficient) {
+                    $coefficient->status = SuitableCoefficient::STATUS_NOTIFIED;
+                    $coefficient->saveQuietly();
+                }
+            }
+
+            Log::channel('warehousesCoefficients')->info('Notification has been sent', [
+                'number'   => count($coefficients),
+            ]);
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @deprecated
+     */
     public function pushAboutCoefficient(SuitableCoefficient $coefficient): bool
     {
         $message = $this->prepareTextMessage($coefficient);
@@ -27,6 +75,13 @@ class NotificationService
             return true;
         }
         return false;
+    }
+
+    private function prepareTextByWarehouse(SuitableCoefficient $coefficient): string
+    {
+        $parsedDate = Carbon::parse($coefficient->accept_date)->translatedFormat('d F Y');
+
+        return "— Коэффициент: {$coefficient->coefficient} \| Дата поставки: {$parsedDate}\n";
     }
 
     private function prepareTextMessage(SuitableCoefficient $coefficient): string

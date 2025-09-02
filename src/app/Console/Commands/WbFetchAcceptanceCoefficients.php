@@ -30,15 +30,19 @@ class WbFetchAcceptanceCoefficients extends Command
      */
     public function handle()
     {
-        $request = SearchRequest::getCurrentActiveRequest();
+        $requests = SearchRequest::getCurrentActiveRequests();
 
-        if (!$request) { // нет активного запроса на поиск => поиск не запускаем
+        if ($requests->isEmpty()) { // нет активного запроса на поиск => поиск не запускаем
             $this->info('Не задано активных поисков!');
             return 1;
         }
 
         try {
-            $this->getAcceptanceCoefficients($request);
+            foreach ($requests as $request) {
+                $this->getAcceptanceCoefficients($request);
+                $this->info("Коэффициенты для поиска #{$request->id} обработан");
+            }
+
             $this->info('Коэффициенты обработаны!');
             return 0;
         } catch (\Exception $e) {

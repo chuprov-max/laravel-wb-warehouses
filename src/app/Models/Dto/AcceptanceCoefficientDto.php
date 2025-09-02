@@ -2,6 +2,7 @@
 
 namespace App\Models\Dto;
 
+use App\Models\SearchRequest;
 use App\Models\SuitableCoefficient;
 use Carbon\Carbon;
 
@@ -79,12 +80,12 @@ class AcceptanceCoefficientDto
         return $parsedDate->greaterThan($threshold);
     }
 
-    public function isSuitable(): bool
+    public function isSuitable(SearchRequest $searchRequest): bool
     {
         return
             ($this->isCoefficientFree() || $this->isCoefficientPaid())
             && $this->allowUnload
-            && $this->boxTypeId == SuitableCoefficient::BOX_TYPE_ID_KOROBA
+            && $this->boxTypeId == $searchRequest->box_type_id
             && $this->isDateSuitable();
     }
 }

@@ -25,13 +25,14 @@ class SearchRequest extends Model
     /**
      * @return mixed
      */
-    public static function getCurrentActiveRequest()
+    public static function getCurrentActiveRequests()
     {
         return self::where('status', self::STATUS_ACTIVE)
             ->orderByDesc('id')
-            ->first();
+            ->get();
     }
 
+    // TODO call only when it will disable by schedule
     public function disableOtherRequests()
     {
         return self::where('status', self::STATUS_ACTIVE)
