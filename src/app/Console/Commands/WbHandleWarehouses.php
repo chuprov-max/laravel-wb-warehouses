@@ -68,7 +68,7 @@ class WbHandleWarehouses extends AbstractWbCommand
             );
             $processedCount++;
         }
-        echo "Number of handled warehouses: $processedCount";
+        echo "Number of handled warehouses: {$processedCount} \n";
         return true;
     }
 }

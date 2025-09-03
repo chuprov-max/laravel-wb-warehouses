@@ -1,7 +1,9 @@
 <?php
-
+/**
+ * @deprecated
+ */
 return [
-    'acceptancePriority' => [
+    'acceptancePriority' => [ // default warehouses in first version
         ['id' => 206348, 'name' => 'Тула'],
         ['id' => 120762, 'name' => 'Электросталь'],
         ['id' => 507, 'name' => 'Коледино'],

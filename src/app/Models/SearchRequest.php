@@ -13,8 +13,12 @@ class SearchRequest extends Model
     const STATUS_INACTIVE = 0;
 
     protected $fillable = [
-        'user_id', 'box_type_id', 'max_coefficient', 'status',
+        'user_id', 'box_type_id', 'max_coefficient', 'status', 'warehouses',
         'started_at', 'stopped_at',
+    ];
+
+    protected $casts = [
+        'warehouses' => 'array',
     ];
 
     public function user()

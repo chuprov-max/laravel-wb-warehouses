@@ -104,6 +104,7 @@
             background-color: #2fa360;
         }
     </style>
+    @stack('styles')
 </head>
 <body>
 <div class="wrapper">
@@ -131,5 +132,6 @@
 </div>
 
 <script src="{{ mix('js/app.js') }}"></script>
+@stack('scripts')
 </body>
 </html>

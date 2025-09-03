@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Models\SearchRequest;
 
@@ -15,7 +16,10 @@ class SearchRequestController extends Controller
 
     public function create()
     {
-        return view('search_requests.form', ['requestModel' => new SearchRequest()]);
+        return view('search_requests.form', [
+            'requestModel' => new SearchRequest(),
+            'warehouses'   => Warehouse::getActiveWarehouses(),
+        ]);
     }
 
     public function store(Request $request)
@@ -24,6 +28,8 @@ class SearchRequestController extends Controller
             'box_type_id' => 'required|in:2,5,6',
             'max_coefficient' => 'required|integer|min:1',
             'status' => 'required|boolean',
+            'warehouses' => 'array',
+            'warehouses.*' => 'integer|exists:warehouses,wb_id',
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -39,7 +45,10 @@ class SearchRequestController extends Controller
 
     public function edit(SearchRequest $searchRequest)
     {
-        return view('search_requests.form', ['requestModel' => $searchRequest]);
+        return view('search_requests.form', [
+            'requestModel' => $searchRequest,
+            'warehouses'   => Warehouse::getActiveWarehouses(),
+        ]);
     }
 
     public function update(Request $request, SearchRequest $searchRequest)
@@ -48,6 +57,8 @@ class SearchRequestController extends Controller
             'box_type_id' => 'required|in:2,5,6',
             'max_coefficient' => 'required|integer|min:1',
             'status' => 'required|boolean',
+            'warehouses' => 'array',
+            'warehouses.*' => 'integer|exists:warehouses,wb_id',
         ]);
 
         if ($searchRequest->status == SearchRequest::STATUS_INACTIVE && $validated['status'] == SearchRequest::STATUS_ACTIVE) {

@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Helpers\StringHelper;
-use App\Helpers\WarehouseHelper;
 use App\Models\SearchRequest;
 use App\Models\SuitableCoefficient;
+use App\Models\Warehouse;
 use App\Services\Messengers\MessengerInterface;
 use App\Services\Messengers\TelegramClient;
 use Carbon\Carbon;
@@ -26,7 +26,7 @@ class NotificationService
             "*__Тип поставки:__* {$boxTypeTitle}\n\n";
 
         foreach ($coefficients as $warehouseId => $coefficientsForWarehouse) {
-            $warehouseName = StringHelper::escapeMarkdown(WarehouseHelper::getNameById($warehouseId));
+            $warehouseName = StringHelper::escapeMarkdown(Warehouse::getNameByWbId($warehouseId));
             $message .= "\n📦 *__Склад:__* {$warehouseName}\n";
             foreach ($coefficientsForWarehouse as $coefficient) {
                 $message .= $this->prepareTextByWarehouse($coefficient);
@@ -86,7 +86,7 @@ class NotificationService
 
     private function prepareTextMessage(SuitableCoefficient $coefficient): string
     {
-        $warehouseName = WarehouseHelper::getNameById($coefficient->warehouse_id);
+        $warehouseName = Warehouse::getNameByWbId($coefficient->warehouse_id);
         $parsedDate = Carbon::parse($coefficient->accept_date)->translatedFormat('d F Y');
         $parsedDateTime = Carbon::parse($coefficient->created_at)->translatedFormat('d F Y \в H:i:s');
 

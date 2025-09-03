@@ -53,11 +53,9 @@ class WbFetchAcceptanceCoefficients extends Command
 
     private function getAcceptanceCoefficients(SearchRequest $searchRequest)
     {
-        $priorityList = config('warehouses.acceptancePriority');
-        $delay = now();
-        $ids = array_column($priorityList, 'id');
+        //$delay = now();
 
-        CheckWarehouseCoefficientsJob::dispatch($ids, $searchRequest); // для запуска 1 раз в минуту (раз в 3 минуты)
+        CheckWarehouseCoefficientsJob::dispatch($searchRequest->warehouses, $searchRequest); // для запуска 1 раз в минуту (раз в 3 минуты)
 
         /*for ($i = 0; $i < 4; $i++) { // для запуска по 4 раза в минуту
             CheckWarehouseCoefficientsJob::dispatch($ids)->delay($delay);
