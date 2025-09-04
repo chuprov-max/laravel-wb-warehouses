@@ -2,12 +2,12 @@
 
 namespace App\Models\Dto;
 
-use App\Models\SuitableCoefficient;
+use App\Models\SearchRequest;
 use Carbon\Carbon;
 
 class AcceptanceCoefficientDto
 {
-    const HOURS_PLUS_SUITABLE = 96;
+    const HOURS_PLUS_SUITABLE = 1;
 
     /**
      * @var string
@@ -70,21 +70,39 @@ class AcceptanceCoefficientDto
         return $this->coefficient < 0;
     }
 
-    public function isDateSuitable(): bool
-    {
-        $parsedDate = Carbon::parse($this->date);
-
-        $threshold = now()->addHours(self::HOURS_PLUS_SUITABLE);
-
-        return $parsedDate->greaterThan($threshold);
-    }
-
-    public function isSuitable(): bool
+    public function isSuitable(SearchRequest $searchRequest): bool
     {
         return
             ($this->isCoefficientFree() || $this->isCoefficientPaid())
             && $this->allowUnload
-            && $this->boxTypeId == SuitableCoefficient::BOX_TYPE_ID_KOROBA
-            && $this->isDateSuitable();
+            && $this->boxTypeId == $searchRequest->box_type_id
+            && $this->isDateSuitable($searchRequest);
+    }
+
+    private function isDateSuitable(SearchRequest $searchRequest): bool
+    {
+        $parsedDate = Carbon::parse($this->date);
+
+        if (!$searchRequest->date_from && !$searchRequest->date_to) { // не заданы интервалы для поиска
+            $threshold = now()->addHours(self::HOURS_PLUS_SUITABLE); // берем все даты от текущего дня
+            return $parsedDate->greaterThan($threshold);
+        }
+
+        $dateFrom = $searchRequest->date_from ? Carbon::parse($searchRequest->date_from)->startOfDay() : null;
+        $dateTo   = $searchRequest->date_to   ? Carbon::parse($searchRequest->date_to)->endOfDay()   : null;
+
+        if ($dateFrom && $dateTo) {
+            return $parsedDate->between($dateFrom, $dateTo, true);
+        }
+
+        if ($dateFrom) {
+            return $parsedDate->greaterThanOrEqualTo($dateFrom);
+        }
+
+        if ($dateTo) {
+            return $parsedDate->lessThanOrEqualTo($dateTo);
+        }
+
+        return true;
     }
 }

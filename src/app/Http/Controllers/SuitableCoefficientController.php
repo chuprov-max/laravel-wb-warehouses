@@ -9,7 +9,6 @@ class SuitableCoefficientController extends Controller
 {
     public function index(Request $request)
     {
-        //$coefficients = SuitableCoefficient::orderBy('id', 'desc')->paginate(15);
         $query = SuitableCoefficient::query();
 
         if ($request->filled('warehouse_id')) {
@@ -18,7 +17,11 @@ class SuitableCoefficientController extends Controller
 
         $coefficients = $query->latest()->paginate(20);
 
-        $warehouses = collect(config('warehouses.acceptancePriority'))->pluck('name', 'id')->toArray();
+        $warehouses = SuitableCoefficient::query()
+            ->join('warehouses', 'suitable_coefficients.warehouse_id', '=', 'warehouses.wb_id')
+            ->orderBy('warehouses.name')
+            ->pluck('warehouses.name', 'suitable_coefficients.warehouse_id')
+            ->toArray();
 
         return view('coefficients.index', compact('coefficients', 'warehouses'));
     }

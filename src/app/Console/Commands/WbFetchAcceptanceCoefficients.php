@@ -30,16 +30,21 @@ class WbFetchAcceptanceCoefficients extends Command
      */
     public function handle()
     {
-        $request = SearchRequest::getCurrentActiveRequest();
+        $requests = SearchRequest::getCurrentActiveRequests();
 
-        if (!$request) { // нет активного запроса на поиск => поиск не запускаем
+        if ($requests->isEmpty()) { // нет активного запроса на поиск => поиск не запускаем
             $this->info('Не задано активных поисков!');
             return 1;
         }
 
         try {
-            $this->getAcceptanceCoefficients($request);
+            foreach ($requests as $request) {
+                $this->getAcceptanceCoefficients($request);
+                $this->info("Коэффициенты для поиска #{$request->id} обработан");
+            }
+
             $this->info('Коэффициенты обработаны!');
+            $this->handleExpiredRequests();
             return 0;
         } catch (\Exception $e) {
             $this->error('Произошла ошибка: ' . $e->getMessage());
@@ -49,15 +54,26 @@ class WbFetchAcceptanceCoefficients extends Command
 
     private function getAcceptanceCoefficients(SearchRequest $searchRequest)
     {
-        $priorityList = config('warehouses.acceptancePriority');
-        $delay = now();
-        $ids = array_column($priorityList, 'id');
+        //$delay = now();
 
-        CheckWarehouseCoefficientsJob::dispatch($ids, $searchRequest); // для запуска 1 раз в минуту (раз в 3 минуты)
+        CheckWarehouseCoefficientsJob::dispatch($searchRequest->warehouses, $searchRequest); // для запуска 1 раз в минуту (раз в 3 минуты)
 
         /*for ($i = 0; $i < 4; $i++) { // для запуска по 4 раза в минуту
             CheckWarehouseCoefficientsJob::dispatch($ids)->delay($delay);
             $delay = $delay->addSeconds(self::DELAY_SECONDS);
         }*/
+    }
+
+    /**
+     * TODO move to separate cron command
+     */
+    private function handleExpiredRequests()
+    {
+        $expiredActiveRequests = SearchRequest::getExpiredActiveRequests();
+        foreach ($expiredActiveRequests as $request) {
+            if ($request->disableRequest()) {
+                $this->info("Request #{$request->id} was expired and disabled.");
+            }
+        }
     }
 }

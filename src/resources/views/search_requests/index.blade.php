@@ -15,8 +15,9 @@
             <th>Тип</th>
             <th>Макс. коэффициент</th>
             <th>Статус</th>
-            <th>Начато</th>
-            <th>Остановлено</th>
+            <th>Искать с</th>
+            <th>Искать по</th>
+            <th>Склады</th>
             <th>Действия</th>
         </tr>
         </thead>
@@ -27,10 +28,23 @@
                 <td>{{ $r->user->name ?? '-' }}</td>
                 <td>{{ \App\Models\SuitableCoefficient::getBoxTypeRussianNameById($r->box_type_id)}}</td>
                 <td>{{ $r->max_coefficient }}</td>
-                <td>{{ $r->status ? 'Вкл' : 'Выкл' }}</td>
-                <td>{{ $r->started_at ?? '-' }}</td>
-                <td>{{ $r->stopped_at ?? '-' }}</td>
-                <td><a href="{{ route('search-requests.edit', $r) }}">Редактировать</a></td>
+                <td>
+                    @if($r->status)
+                        <span class="text-green-600 font-bold">Вкл</span>
+                    @else
+                        <span class="text-red-600 font-bold">Выкл</span>
+                    @endif
+                </td>
+                <td>{{ optional($r->date_from)->format('d.m.Y') ?? '-' }}</td>
+                <td>{{ optional($r->date_to)->format('d.m.Y') ?? '-' }}</td>
+                <td>
+                    @if($r->warehouse_names)
+                        {{ implode(', ', $r->warehouse_names) }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td><a href="{{ route('search-requests.edit', $r) }}" class="button-primary">Редактировать</a></td>
             </tr>
         @empty
             <tr><td colspan="8">Нет данных</td></tr>

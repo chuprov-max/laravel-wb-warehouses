@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SuppliesApiClient;
 use Dakword\WBSeller\APIToken;
 use Illuminate\Console\Command;
-use Dakword\WBSeller\API;
 
-class WBPing extends AbstractWbCommand
+class WbPing extends Command
 {
     /**
      * The name and signature of the console command.
@@ -25,10 +25,10 @@ class WBPing extends AbstractWbCommand
     /**
      * Execute the console command.
      */
-    public function customHandle(): int
+    public function handle(SuppliesApiClient $suppliesApiClient): int
     {
         try {
-            $custom = $this->wbSellerApi->Common();
+            $custom = $suppliesApiClient->getCommon();
             $response = $custom->ping();
 
             if ($response) {
@@ -45,7 +45,7 @@ class WBPing extends AbstractWbCommand
                 echo "\n".$token->accessTo('chat') ? 'Yes' : 'No'; // No
                 echo "\n".implode(',', $token->accessList()); // 'Цены и скидки, Маркетплейс, Документы'
                 echo "\n".implode(',', array_keys($token->accessList())); // '3, 4, 12' - Позиции бита
-                echo "\n".$token;
+                echo "\n".$token."\n";
             } else {
                 $this->error('❌ Пинг не выполнен. Проверьте API-ключ.');
             }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Models\SearchRequest;
 
@@ -15,7 +16,10 @@ class SearchRequestController extends Controller
 
     public function create()
     {
-        return view('search_requests.form', ['requestModel' => new SearchRequest()]);
+        return view('search_requests.form', [
+            'requestModel' => new SearchRequest(),
+            'warehouses'   => Warehouse::getActiveWarehouses(),
+        ]);
     }
 
     public function store(Request $request)
@@ -24,6 +28,12 @@ class SearchRequestController extends Controller
             'box_type_id' => 'required|in:2,5,6',
             'max_coefficient' => 'required|integer|min:1',
             'status' => 'required|boolean',
+            'warehouses' => 'array',
+            'warehouses.*' => 'integer|exists:warehouses,wb_id',
+            'date_from' => 'nullable|date|after_or_equal:today',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+        ], [
+            'date_to.after_or_equal' => 'Дата окончания должна быть позже или равна дате начала.',
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -34,16 +44,15 @@ class SearchRequestController extends Controller
 
         $searchRequest = SearchRequest::create($validated);
 
-        if ($searchRequest->status == SearchRequest::STATUS_ACTIVE) {
-            $searchRequest->disableOtherRequests();
-        }
-
         return redirect()->route('search-requests.index')->with('success', 'Запрос добавлен');
     }
 
     public function edit(SearchRequest $searchRequest)
     {
-        return view('search_requests.form', ['requestModel' => $searchRequest]);
+        return view('search_requests.form', [
+            'requestModel' => $searchRequest,
+            'warehouses'   => Warehouse::getActiveWarehouses(),
+        ]);
     }
 
     public function update(Request $request, SearchRequest $searchRequest)
@@ -52,12 +61,17 @@ class SearchRequestController extends Controller
             'box_type_id' => 'required|in:2,5,6',
             'max_coefficient' => 'required|integer|min:1',
             'status' => 'required|boolean',
+            'warehouses' => 'array',
+            'warehouses.*' => 'integer|exists:warehouses,wb_id',
+            'date_from' => 'nullable|date|after_or_equal:today',
+            'date_to'   => 'nullable|date|after_or_equal:date_from',
+        ], [
+            'date_to.after_or_equal' => 'Дата окончания должна быть позже или равна дате начала.',
         ]);
 
         if ($searchRequest->status == SearchRequest::STATUS_INACTIVE && $validated['status'] == SearchRequest::STATUS_ACTIVE) {
             $validated['started_at'] = now();
             $validated['stopped_at'] = null;
-            $searchRequest->disableOtherRequests();
         } elseif ($searchRequest->status == SearchRequest::STATUS_ACTIVE && $validated['status'] == SearchRequest::STATUS_INACTIVE) {
             $validated['stopped_at'] = now();
         }

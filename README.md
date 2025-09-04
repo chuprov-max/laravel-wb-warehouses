@@ -60,6 +60,11 @@ Docker Desktop (Mac) может игнорировать DNS в docker-compose.y
 
 `* * * * * /usr/local/bin/docker exec -u www-data laravel-app php artisan schedule:run >> /dev/null 2>&1`
 
+### List current cron jobs
+```crontab -e```  
+comment if don't need anymore
+
+
 ## Build frontend
 ```npm install && npm run prod```
 

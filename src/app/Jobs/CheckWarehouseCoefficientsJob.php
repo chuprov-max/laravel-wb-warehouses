@@ -51,6 +51,8 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
 
             Log::channel('warehousesCoefficients')->info('Suitable coefficients = '. count($suitableCoefficients));
 
+            $suitableCoefficientsModels = [];
+
             /** @var AcceptanceCoefficientDto $coefficient */
             foreach ($suitableCoefficients as $coefficient) {
                 $model = SuitableCoefficient::create([
@@ -62,18 +64,18 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
                     'accept_date' => Carbon::parse($coefficient->date),
                     'status' => SuitableCoefficient::STATUS_CREATED
                 ]);
-                Log::channel('warehousesCoefficients')->info('Founded coefficient with ID='.$model->id, $model->toArray());
 
-                $logData = [
-                    'warehouse_id'   => $coefficient->warehouseId,
-                    'response'       => $response,
-                ];
-                Log::channel('warehousesCoefficients')->info('Response, which contains suitable coefficient', $logData);
+                if ($model) {
+                    $suitableCoefficientsModels[$coefficient->warehouseId][] = $model;
+                    Log::channel('warehousesCoefficients')->info('Founded coefficient with ID='.$model->id, $model->toArray());
+                }
+            }
 
-                if ((new NotificationService())->pushAboutCoefficient($model)) {
-                    Log::channel('warehousesCoefficients')->info('Telegram Notification sent successfully');
+            if (count($suitableCoefficientsModels) > 0) {
+                if ((new NotificationService())->pushAboutCoefficients($this->searchRequest, $suitableCoefficientsModels)) {
+                    Log::channel('warehousesCoefficients')->info('Telegram Notification sent successfully for search ID='.$this->searchRequest->id);
                 } else {
-                    Log::channel('warehousesCoefficients')->info('Telegram Notification was failed');
+                    Log::channel('warehousesCoefficients')->info('Telegram Notification was failed for search ID='.$this->searchRequest->id);
                 }
             }
         } catch (\Throwable $e) {
@@ -86,7 +88,7 @@ class CheckWarehouseCoefficientsJob implements ShouldQueue
         $suitableCoefficients = [];
         foreach ($responseData as $item) {
             $coefficientDto = new AcceptanceCoefficientDto($item);
-            if ($coefficientDto->isSuitable()) {
+            if ($coefficientDto->isSuitable($this->searchRequest)) {
                 $suitableCoefficients[] = $coefficientDto;
             }
         }

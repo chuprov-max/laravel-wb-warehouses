@@ -36,7 +36,7 @@
         @forelse ($coefficients as $coefficient)
             <tr>
                 <td>{{ $coefficient->id }}</td>
-                <td>{{ \App\Helpers\WarehouseHelper::getNameById($coefficient->warehouse_id) ?? '-' }}</td>
+                <td>{{ \App\Models\Warehouse::getNameByWbId($coefficient->warehouse_id) ?? '-' }}</td>
                 <td>{{ $coefficient->coefficient ?? '-' }}</td>
                 <td>{{ $coefficient->accept_date ?? '-' }}</td>
                 <td>{{ $coefficient->getBoxTypeRussianName() ?? '-' }}</td>

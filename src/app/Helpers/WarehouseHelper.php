@@ -2,6 +2,9 @@
 
 namespace App\Helpers;
 
+/**
+ * @deprecated
+ */
 class WarehouseHelper
 {
     public static function getNameById(int $id): ?string

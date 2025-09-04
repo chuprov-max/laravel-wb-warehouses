@@ -2,13 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Dakword\WBSeller\API\Endpoint\Supplies;
+use App\Services\SuppliesApiClient;
 use App\Models\Warehouse;
 use Illuminate\Console\Command;
-use Dakword\WBSeller\API;
 
-// TODO remove extending from AbstractWbCommand
-class WbHandleWarehouses extends AbstractWbCommand
+class WbHandleWarehouses extends Command
 {
     /**
      * The name and signature of the console command.
@@ -28,47 +26,30 @@ class WbHandleWarehouses extends AbstractWbCommand
     /**
      * Execute the console command.
      */
-    public function customHandle()
+    public function handle(SuppliesApiClient $suppliesApiClient)
     {
+        $processedCount = 0;
         try {
-            $supplies = $this->wbSellerApi->Supplies();
-
-            // Отправка запроса к API для получения коэффициентов
-            $ping = $supplies->ping(); //$wbSeller->get('https://supplies-api.wildberries.ru/api/v1/acceptance/coefficients');
-            if ($ping && $ping->Status == 'OK') {
-                $this->syncWarehouses($supplies);
+            $warehouses = $suppliesApiClient->getSupplies()->warehouses();
+            foreach ($warehouses as $item) {
+                Warehouse::updateOrCreate(
+                    ['wb_id' => $item->ID], // если `id` должен соответствовать внешнему ID
+                    [
+                        'wb_id' => $item->ID,
+                        'name'        => $item->name,
+                        'address'     => $item->address,
+                        'work_time'   => $item->workTime,
+                        'accepts_qr'  => $item->acceptsQR,
+                        'active'      => $item->isActive,
+                    ]
+                );
+                $processedCount++;
             }
-
-            // Проверка ответа
-            if ($response['error'] ?? false) {
-                $this->error("Ошибка API: " . $response['message'] ?? 'Неизвестная ошибка');
-                return 1;
-            }
-            return 0;
+            $this->info("Number of handled warehouses: {$processedCount} \n");
+            return true;
         } catch (\Exception $e) {
             $this->error('Произошла ошибка: ' . $e->getMessage());
             return 1;
         }
-    }
-
-    private function syncWarehouses(Supplies $supplies): bool
-    {
-        $processedCount = 0;
-        foreach ($supplies->warehouses() as $item) {
-            Warehouse::updateOrCreate(
-                ['wb_id' => $item->ID], // если `id` должен соответствовать внешнему ID
-                [
-                    'wb_id' => $item->ID,
-                    'name'        => $item->name,
-                    'address'     => $item->address,
-                    'work_time'   => $item->workTime,
-                    'accepts_qr'  => $item->acceptsQR,
-                    'active'      => $item->isActive,
-                ]
-            );
-            $processedCount++;
-        }
-        echo "Number of handled warehouses: $processedCount";
-        return true;
     }
 }
