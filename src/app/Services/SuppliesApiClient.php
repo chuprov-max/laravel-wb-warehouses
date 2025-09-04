@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Dakword\WBSeller\API;
+use Dakword\WBSeller\API\Endpoint\Common;
 
 class SuppliesApiClient
 {
@@ -22,5 +23,10 @@ class SuppliesApiClient
     public function getSupplies()
     {
         return $this->wbSellerApi->Supplies();
+    }
+
+    public function getCommon():Common
+    {
+        return $this->wbSellerApi->Common();
     }
 }
