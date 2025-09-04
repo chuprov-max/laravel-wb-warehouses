@@ -15,10 +15,14 @@ class SearchRequest extends Model
     protected $fillable = [
         'user_id', 'box_type_id', 'max_coefficient', 'status', 'warehouses',
         'started_at', 'stopped_at',
+        'date_from',
+        'date_to',
     ];
 
     protected $casts = [
         'warehouses' => 'array',
+        'date_from' => 'date',
+        'date_to' => 'date',
     ];
 
     public function user()
@@ -32,15 +36,46 @@ class SearchRequest extends Model
     public static function getCurrentActiveRequests()
     {
         return self::where('status', self::STATUS_ACTIVE)
+            /*->where(function ($q) {
+                $q->whereNull('date_from')
+                    ->orWhereDate('date_from', '<=', now()->toDateString());
+            })*/
+            ->where(function ($q) {
+                $q->whereNull('date_to')
+                    ->orWhereDate('date_to', '>=', now()->toDateString());
+            })
             ->orderByDesc('id')
             ->get();
     }
 
-    // TODO call only when it will disable by schedule
-    public function disableOtherRequests()
+    public static function getExpiredActiveRequests()
     {
         return self::where('status', self::STATUS_ACTIVE)
-            ->where('id', '!=', $this->id)
-            ->update(['status' => self::STATUS_INACTIVE, 'stopped_at' => now()]);
+            ->whereNotNull('date_to')
+            ->whereDate('date_to', '<', now()->toDateString())
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    /**
+     * @return bool
+     */
+    public function disableRequest(): bool
+    {
+        return $this->update([
+            'status' => self::STATUS_INACTIVE,
+            'stopped_at' => now()
+        ]);
+    }
+
+    public function getWarehouseNamesAttribute(): array
+    {
+        if (!is_array($this->warehouses) || empty($this->warehouses)) {
+            return [];
+        }
+
+        return \App\Models\Warehouse::whereIn('wb_id', $this->warehouses)
+            ->pluck('name', 'wb_id')
+            ->toArray();
     }
 }

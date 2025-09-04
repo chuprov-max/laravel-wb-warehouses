@@ -30,6 +30,10 @@ class SearchRequestController extends Controller
             'status' => 'required|boolean',
             'warehouses' => 'array',
             'warehouses.*' => 'integer|exists:warehouses,wb_id',
+            'date_from' => 'nullable|date|after_or_equal:today',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+        ], [
+            'date_to.after_or_equal' => 'Дата окончания должна быть позже или равна дате начала.',
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -59,6 +63,10 @@ class SearchRequestController extends Controller
             'status' => 'required|boolean',
             'warehouses' => 'array',
             'warehouses.*' => 'integer|exists:warehouses,wb_id',
+            'date_from' => 'nullable|date|after_or_equal:today',
+            'date_to'   => 'nullable|date|after_or_equal:date_from',
+        ], [
+            'date_to.after_or_equal' => 'Дата окончания должна быть позже или равна дате начала.',
         ]);
 
         if ($searchRequest->status == SearchRequest::STATUS_INACTIVE && $validated['status'] == SearchRequest::STATUS_ACTIVE) {

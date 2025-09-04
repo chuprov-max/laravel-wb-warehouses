@@ -41,6 +41,26 @@
         </div>
 
         <div>
+            <label>Дата начала поиска:</label>
+            <input type="date" name="date_from"
+                   min="{{ now()->toDateString() }}"
+                   value="{{ old('date_from', optional($requestModel->date_from)->toDateString()) }}">
+            @error('date_from')
+            <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div>
+            <label>Дата окончания поиска:</label>
+            <input type="date" name="date_to"
+                   min="{{ now()->toDateString() }}"
+                   value="{{ old('date_to', optional($requestModel->date_to)->toDateString()) }}">
+            @error('date_to')
+            <div class="text-red-600">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div>
             <label>Статус (включено?):</label>
             <select name="status">
                 <option value="0" {{ old('status', $requestModel->status ?? 0 ) == 0 ? 'selected' : '' }} >Отключено</option>

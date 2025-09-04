@@ -44,6 +44,7 @@ class WbFetchAcceptanceCoefficients extends Command
             }
 
             $this->info('Коэффициенты обработаны!');
+            $this->handleExpiredRequests();
             return 0;
         } catch (\Exception $e) {
             $this->error('Произошла ошибка: ' . $e->getMessage());
@@ -61,5 +62,18 @@ class WbFetchAcceptanceCoefficients extends Command
             CheckWarehouseCoefficientsJob::dispatch($ids)->delay($delay);
             $delay = $delay->addSeconds(self::DELAY_SECONDS);
         }*/
+    }
+
+    /**
+     * TODO move to separate cron command
+     */
+    private function handleExpiredRequests()
+    {
+        $expiredActiveRequests = SearchRequest::getExpiredActiveRequests();
+        foreach ($expiredActiveRequests as $request) {
+            if ($request->disableRequest()) {
+                $this->info("Request #{$request->id} was expired and disabled.");
+            }
+        }
     }
 }
