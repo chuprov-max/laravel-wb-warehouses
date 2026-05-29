@@ -2,29 +2,21 @@
 
 namespace App\Providers;
 
+use App\Services\Messengers\MessengerInterface;
+use App\Services\Messengers\TelegramClient;
 use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
-        //
+        $this->app->bind(MessengerInterface::class, TelegramClient::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
+    public function boot(): void
     {
-        Carbon::setLocale('ru'); // Установить русский язык
-        setlocale(LC_TIME, 'ru_RU.UTF-8'); // Для системной локали
+        Carbon::setLocale('ru');
+        setlocale(LC_TIME, 'ru_RU.UTF-8');
     }
 }

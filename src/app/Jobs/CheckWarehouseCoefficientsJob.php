@@ -6,92 +6,87 @@ use App\Models\Dto\AcceptanceCoefficientDto;
 use App\Models\SearchRequest;
 use App\Models\SuitableCoefficient;
 use App\Services\NotificationService;
+use App\Services\SuppliesApiClient;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\SuppliesApiClient;
+use Illuminate\Support\Facades\Log;
 
 class CheckWarehouseCoefficientsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * @var array
-     */
-    public $warehouseIds;
-
-    /**
-     * @var SearchRequest|null
-     */
-    public $searchRequest;
-
-    public function __construct(array $warehouseIds, SearchRequest $searchRequest = null)
-    {
-        $this->warehouseIds = $warehouseIds;
-        $this->searchRequest = $searchRequest;
+    public function __construct(
+        public array $warehouseIds,
+        public SearchRequest $searchRequest,
+    ) {
     }
 
-    public function handle(SuppliesApiClient $suppliesApiClient)
+    public function handle(SuppliesApiClient $suppliesApiClient, NotificationService $notificationService): void
     {
-        Log::channel('warehousesCoefficients')->info("Задача запущена", [
-            'warehouse_ids' => $this->warehouseIds,
-            'time' => now()->toDateTimeString(),
-            'searchRequestId' => $this->searchRequest ? $this->searchRequest->id : null,
+        Log::channel('warehousesCoefficients')->info('Задача запущена', [
+            'warehouse_ids'   => $this->warehouseIds,
+            'time'            => now()->toDateTimeString(),
+            'searchRequestId' => $this->searchRequest->id,
         ]);
+
         try {
             $response = $suppliesApiClient->getSupplies()->coefficients($this->warehouseIds);
 
-            Log::channel('warehousesCoefficients')->info('Warehouse coefficients received = '. count($response));
+            Log::channel('warehousesCoefficients')->info('Warehouse coefficients received = ' . count($response));
 
             $suitableCoefficients = $this->filterSuitableCoefficients($response);
 
-            Log::channel('warehousesCoefficients')->info('Suitable coefficients = '. count($suitableCoefficients));
+            Log::channel('warehousesCoefficients')->info('Suitable coefficients = ' . count($suitableCoefficients));
 
-            $suitableCoefficientsModels = [];
+            $grouped = [];
 
             /** @var AcceptanceCoefficientDto $coefficient */
             foreach ($suitableCoefficients as $coefficient) {
                 $model = SuitableCoefficient::create([
-                    'warehouse_id' => $coefficient->warehouseId,
-                    'search_request_id' => $this->searchRequest ? $this->searchRequest->id : null,
-                    'coefficient' => $coefficient->coefficient,
-                    'allow_unload' => $coefficient->allowUnload,
-                    'box_type_id' => $coefficient->boxTypeId,
-                    'accept_date' => Carbon::parse($coefficient->date),
-                    'status' => SuitableCoefficient::STATUS_CREATED
+                    'warehouse_id'      => $coefficient->warehouseId,
+                    'search_request_id' => $this->searchRequest->id,
+                    'coefficient'       => $coefficient->coefficient,
+                    'allow_unload'      => $coefficient->allowUnload,
+                    'box_type_id'       => $coefficient->boxTypeId,
+                    'accept_date'       => Carbon::parse($coefficient->date),
+                    'status'            => SuitableCoefficient::STATUS_CREATED,
                 ]);
 
                 if ($model) {
-                    $suitableCoefficientsModels[$coefficient->warehouseId][] = $model;
-                    Log::channel('warehousesCoefficients')->info('Founded coefficient with ID='.$model->id, $model->toArray());
+                    $grouped[$coefficient->warehouseId][] = $model;
+                    Log::channel('warehousesCoefficients')->info('Founded coefficient with ID=' . $model->id, $model->toArray());
                 }
             }
 
-            if (count($suitableCoefficientsModels) > 0) {
-                if ((new NotificationService())->pushAboutCoefficients($this->searchRequest, $suitableCoefficientsModels)) {
-                    Log::channel('warehousesCoefficients')->info('Telegram Notification sent successfully for search ID='.$this->searchRequest->id);
-                } else {
-                    Log::channel('warehousesCoefficients')->info('Telegram Notification was failed for search ID='.$this->searchRequest->id);
-                }
+            if (empty($grouped)) {
+                return;
             }
+
+            $sent = $notificationService->pushAboutCoefficients($this->searchRequest, $grouped);
+
+            Log::channel('warehousesCoefficients')->info(
+                $sent
+                    ? 'Telegram Notification sent successfully for search ID=' . $this->searchRequest->id
+                    : 'Telegram Notification failed for search ID=' . $this->searchRequest->id
+            );
         } catch (\Throwable $e) {
-            Log::channel('warehousesCoefficients')->error("Ошибка при запросе к складам: " . $e->getMessage());
+            Log::channel('warehousesCoefficients')->error('Ошибка при запросе к складам: ' . $e->getMessage());
         }
     }
 
     private function filterSuitableCoefficients(array $responseData): array
     {
-        $suitableCoefficients = [];
+        $suitable = [];
         foreach ($responseData as $item) {
-            $coefficientDto = new AcceptanceCoefficientDto($item);
-            if ($coefficientDto->isSuitable($this->searchRequest)) {
-                $suitableCoefficients[] = $coefficientDto;
+            $dto = new AcceptanceCoefficientDto($item);
+            if ($dto->isSuitable($this->searchRequest)) {
+                $suitable[] = $dto;
             }
         }
-        return $suitableCoefficients;
+        return $suitable;
     }
 }
